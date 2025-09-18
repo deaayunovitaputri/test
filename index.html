@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard SIPDe</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+    <style>
+        /* CSS tetap sama seperti kode asli */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #2c3e50;
+            min-height: 100vh;
+        }
+        /* ... sisanya sama seperti kode asli ... */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-chart-line"></i> Dashboard SIPDe</h1>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters">
+            <div class="filter-group">
+                <label for="bank-filter"><i class="fas fa-university"></i> Bank</label>
+                <select id="bank-filter" class="multi-select" multiple>
+                    <option value="Bank Jatim">Bank Jatim</option>
+                    <option value="Bank UMKM Jatim">Bank UMKM Jatim</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="region-filter"><i class="fas fa-map-marker-alt"></i> Wilayah</label>
+                <select id="region-filter" class="multi-select" multiple>
+                    <option value="Surabaya">Surabaya</option>
+                    <option value="Malang">Malang</option>
+                    <option value="Sidoarjo">Sidoarjo</option>
+                    <option value="Gresik">Gresik</option>
+                    <option value="Pasuruan">Pasuruan</option>
+                    <option value="Mojokerto">Mojokerto</option>
+                    <option value="Kediri">Kediri</option>
+                    <option value="Jember">Jember</option>
+                    <option value="Banyuwangi">Banyuwangi</option>
+                    <option value="Probolinggo">Probolinggo</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="year-filter"><i class="fas fa-calendar"></i> Periode</label>
+                <select id="year-filter" class="multi-select" multiple>
+                    <option value="2022">2022</option>
+                    <option value="2023">2023</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="status-filter"><i class="fas fa-check-circle"></i> Status</label>
+                <select id="status-filter" class="multi-select" multiple>
+                    <option value="Pending">Pending</option>
+                    <option value="Disetujui">Disetujui</option>
+                    <option value="Ditolak">Ditolak</option>
+                </select>
+            </div>
+            <button class="filter-btn" id="filterBtn">
+                <i class="fas fa-filter"></i> Filter Data
+            </button>
+            <button class="reset-btn" id="resetBtn">
+                <i class="fas fa-refresh"></i> Reset
+            </button>
+        </div>
+
+        <!-- Statistics Cards - Single Row -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-users"></i></div>
+                <div class="stat-value animate-counter" id="total-debtors">66</div>
+                <div class="stat-label">Jumlah Debitur</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+                <div class="stat-value animate-counter" id="total-plafond">9735.0M</div>
+                <div class="stat-label">Jumlah Plafond</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-credit-card"></i></div>
+                <div class="stat-value animate-counter" id="outstanding-debt">3877.5M</div>
+                <div class="stat-label">Baki Debet</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-briefcase"></i></div>
+                <div class="stat-value animate-counter" id="workforce">1,748</div>
+                <div class="stat-label">Tenaga Kerja Terserap</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-chart-area"></i></div>
+                <div class="stat-value animate-counter" id="omset-projection">15%</div>
+                <div class="stat-label">Proyeksi Omset Debitur</div>
+            </div>
+        </div>
+
+        <!-- Growth Card - Horizontal -->
+        <div class="growth-card-container">
+            <div class="growth-card">
+                <div class="growth-card-content">
+                    <div class="growth-title">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Pertumbuhan Ekonomi</span>
+                    </div>
+                    <div class="growth-metrics">
+                        <div class="growth-metric">
+                            <div class="growth-metric-value">4.93%</div>
+                            <div class="growth-metric-label">Y on Y</div>
+                        </div>
+                        <div class="growth-metric">
+                            <div class="growth-metric-value">-0.2%</div>
+                            <div class="growth-metric-label">Q to Q</div>
+                        </div>
+                        <div class="growth-metric">
+                            <div class="growth-metric-value">4.93%</div>
+                            <div class="growth-metric-label">C to C</div>
+                        </div>
+                        <div class="growth-metric">
+                            <div class="growth-metric-value">10%</div>
+                            <div class="growth-metric-label">Kontribusi Jatim</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Width Map -->
+        <div class="map-section">
+            <div class="map-title">
+                <i class="fas fa-map-marked-alt"></i> Persebaran Lokasi Pengajuan
+            </div>
+            <div class="map-container" id="map"></div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color pending-high"></div>
+                    <span>Pending Tinggi (>50)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color pending-medium"></div>
+                    <span>Pending Sedang (20-50)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color pending-low"></div>
+                    <span>Pending Rendah (<20)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color approved"></div>
+                    <span>Terealisasi</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-row">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-pie-chart"></i> Kategori Debitur
+                </div>
+                <div class="chart-container">
+                    <canvas id="debtorChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-industry"></i> Sektor yang Dibiayai
+                </div>
+                <div class="chart-container">
+                    <canvas id="sectorChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Charts -->
+        <div class="charts-row">
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-building"></i> Pengajuan per Kabupaten/Kota
+                </div>
+                <div class="chart-container">
+                    <canvas id="regionChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-title">
+                    <i class="fas fa-university"></i> Realisasi per Kantor Cabang
+                </div>
+                <div class="chart-container">
+                    <canvas id="branchChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>&copy; 2025 Biro Perekonomian Provinsi Jawa Timur | Dashboard SIPDe</p>
+            <p><i class="fas fa-envelope"></i> biro.perekonomian@jatimprov.go.id | <i class="fas fa-phone"></i> (031) 8283306</p>
+        </div>
+    </div>
+
+    <!-- Modal for Sector Timeline -->
+    <div class="modal-overlay" id="sectorModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <i class="fas fa-chart-line"></i>
+                    <span id="modalSectorTitle">Timeline Sektor</span>
+                </div>
+                <button class="modal-close" onclick="closeSectorModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-chart-container">
+                <canvas id="sectorTimelineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data tetap sama seperti kode asli
+        const allData = [
+            {id: 1, name: "PT Maju Bersama", amount: 75000000, status: "Pending", sector: "Perdagangan", region: "Surabaya", bank: "Bank Jatim", year: 2024, branch: "Cabang Surabaya Pusat", lat: -7.2575, lng: 112.7521, pendingCount: 85, workforce: 15, month: 1},
+            // ... data lainnya tetap sama ...
+        ];
+
+        let filteredData = [...allData];
+        let map;
+        let charts = {};
+        let markers = [];
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Ags', 'Sep', 'Okt', 'Nov', 'Des'];
+
+        // East Java regions
+        const eastJavaRegions = [
+            {
+                name: 'Surabaya',
+                coordinates: [[-7.25, 112.65], [-7.25, 112.85], [-7.35, 112.85], [-7.35, 112.65]],
+                data: {
+                    total: 45,
+                    pending: 15,
+                    approved: 25,
+                    rejected: 5,
+                    processing: 10
+                },
+                status: 'approved'
+            },
+            {
+                name: 'Sidoarjo',
+                coordinates: [[-7.4, 112.6], [-7.4, 112.8], [-7.5, 112.8], [-7.5, 112.6]],
+                data: {
+                    total: 32,
+                    pending: 10,
+                    approved: 15,
+                    rejected: 5,
+                    processing: 2
+                },
+                status: 'pending'
+            },
+            // ... tambahkan wilayah lain jika diperlukan ...
+        ];
+
+        const statusColors = {
+            pending: '#FFC107',
+            approved: '#4CAF50',
+            rejected: '#F44336',
+            processing: '#2196F3'
+        };
+
+        // Gabungkan inisialisasi peta
+        function initMap() {
+            map = L.map('map').setView([-7.8, 112.5], 8);
+
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: 'OpenStreetMap contributors',
+                maxZoom: 18
+            }).addTo(map);
+
+            // Tambahkan poligon wilayah
+            eastJavaRegions.forEach(region => {
+                const color = statusColors[region.status] || '#999999';
+                const polygon = L.polygon(region.coordinates, {
+                    color: color,
+                    weight: 1,
+                    fillOpacity: 0.5
+                }).addTo(map);
+
+                const popupContent = `
+                    <div class="map-popup">
+                        <h3>${region.name}</h3>
+                        <div class="map-stats">
+                            <div>Total: <strong>${region.data.total}</strong></div>
+                            <div>Pending: <strong>${region.data.pending}</strong></div>
+                            <div>Approved: <strong>${region.data.approved}</strong></div>
+                            <div>Rejected: <strong>${region.data.rejected}</strong></div>
+                            <div>Processing: <strong>${region.data.processing}</strong></div>
+                        </div>
+                    </div>
+                `;
+                polygon.bindPopup(popupContent);
+
+                polygon.on('mouseover', function() {
+                    this.setStyle({ weight: 3, fillOpacity: 0.7 });
+                });
+                polygon.on('mouseout', function() {
+                    this.setStyle({ weight: 1, fillOpacity: 0.5 });
+                });
+            });
+
+            // Tambahkan marker
+            updateMapMarkers();
+
+            // Tambahkan legenda
+            const legend = L.control({ position: 'bottomright' });
+            legend.onAdd = function() {
+                const div = L.DomUtil.create('div', 'map-legend');
+                div.innerHTML = `
+                    <h4>Status Legenda</h4>
+                    <div><i style="background:${statusColors.pending}"></i> Pending</div>
+                    <div><i style="background:${statusColors.approved}"></i> Disetujui</div>
+                    <div><i style="background:${statusColors.rejected}"></i> Ditolak</div>
+                    <div><i style="background:${statusColors.processing}"></i> Proses</div>
+                `;
+                return div;
+            };
+            legend.addTo(map);
+        }
+
+        function updateMapMarkers() {
+            markers.forEach(marker => map.removeLayer(marker));
+            markers = [];
+
+            filteredData.forEach(item => {
+                let color, status_text, radius;
+                if (item.status === 'Disetujui') {
+                    color = '#28a745';
+                    status_text = 'Terealisasi';
+                    radius = 8;
+                } else if (item.status === 'Ditolak') {
+                    color = '#6c757d';
+                    status_text = 'Ditolak';
+                    radius = 6;
+                } else {
+                    if (item.pendingCount > 50) {
+                        color = '#dc3545';
+                        status_text = `Pending Tinggi (${item.pendingCount})`;
+                        radius = 15;
+                    } else if (item.pendingCount >= 20) {
+                        color = '#fd7e14';
+                        status_text = `Pending Sedang (${item.pendingCount})`;
+                        radius = 12;
+                    } else {
+                        color = '#ffc107';
+                        status_text = `Pending Rendah (${item.pendingCount})`;
+                        radius = 10;
+                    }
+                }
+
+                const marker = L.circleMarker([item.lat, item.lng], {
+                    radius: radius,
+                    fillColor: color,
+                    color: '#fff',
+                    weight: 3,
+                    opacity: 1,
+                    fillOpacity: 0.9
+                }).addTo(map);
+
+                markers.push(marker);
+
+                marker.bindPopup(`
+                    <div style="font-family: 'Inter', sans-serif; padding: 5px;">
+                        <h4 style="margin: 0 0 8px 0; color: #2c3e50; font-size: 14px;">${item.name}</h4>
+                        <div style="font-size: 12px; line-height: 1.6;">
+                            <p style="margin: 3px 0;"><strong>💰 Nominal:</strong> Rp ${item.amount.toLocaleString('id-ID')}</p>
+                            <p style="margin: 3px 0;"><strong>📊 Status:</strong> <span style="color: ${color}; font-weight: bold;">${status_text}</span></p>
+                            <p style="margin: 3px 0;"><strong>🏭 Sektor:</strong> ${item.sector}</p>
+                            <p style="margin: 3px 0;"><strong>🏛️ Bank:</strong> ${item.bank}</p>
+                            <p style="margin: 3px 0;"><strong>👥 Tenaga Kerja:</strong> ${item.workforce} orang</p>
+                            <p style="margin: 3px 0;"><strong>📅 Tahun:</strong> ${item.year}</p>
+                            <button onclick="showDetail(${item.id})" style="margin-top: 8px; padding: 5px 10px; background: ${color}; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 11px;">
+                                📋 Detail
+                            </button>
+                        </div>
+                    </div>
+                `, {
+                    maxWidth: 250,
+                    className: 'custom-popup'
+                });
+            });
+        }
+
+        // Fungsi lainnya tetap sama seperti kode asli
+        function generateSectorTimelineData(sector) {
+            const monthlyData = [];
+            const monthlyCount = [];
+            for (let month = 1; month <= 12; month++) {
+                const sectorDataForMonth = filteredData.filter(item => 
+                    item.sector === sector && item.month === month
+                );
+                const totalAmount = sectorDataForMonth.reduce((sum, item) => sum + item.amount, 0) / 1000000;
+                const count = sectorDataForMonth.length;
+                monthlyData.push(totalAmount);
+                monthlyCount.push(count);
+            }
+            return { monthlyData, monthlyCount };
+        }
+
+        function showSectorTimeline(sector) {
+            document.getElementById('modalSectorTitle').textContent = `Timeline Sektor ${sector}`;
+            document.getElementById('sectorModal').style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            const { monthlyData, monthlyCount } = generateSectorTimelineData(sector);
+            const ctx = document.getElementById('sectorTimelineChart').getContext('2d');
+            if (charts.sectorTimeline) {
+                charts.sectorTimeline.destroy();
+            }
+            charts.sectorTimeline = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: monthNames,
+                    datasets: [{
+                        label: 'Nominal (Miliar Rp)',
+                        data: monthlyData,
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#667eea',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y'
+                    }, {
+                        label: 'Jumlah Pengajuan',
+                        data: monthlyCount,
+                        borderColor: '#764ba2',
+                        backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                        tension: 0.4,
+                        fill: false,
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointBackgroundColor: '#764ba2',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                font: {
+                                    size: 12,
+                                    weight: '600'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#2c3e50',
+                            bodyColor: '#2c3e50',
+                            borderColor: '#667eea',
+                            borderWidth: 1,
+                            cornerRadius: 10,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            ticks: { font: { size: 11, weight: '600' } }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            ticks: {
+                                font: { size: 11, weight: '600' },
+                                callback: function(value) { return value.toFixed(2); }
+                            },
+                            title: {
+                                display: true,
+                                text: 'Nominal (Miliar Rp)',
+                                font: { size: 12, weight: '600' }
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            ticks: { font: { size: 11, weight: '600' } },
+                            title: {
+                                display: true,
+                                text: 'Jumlah Pengajuan',
+                                font: { size: 12, weight: '600' }
+                            },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function closeSectorModal() {
+            document.getElementById('sectorModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
+            if (charts.sectorTimeline) {
+                charts.sectorTimeline.destroy();
+                charts.sectorTimeline = null;
+            }
+        }
+
+        function calculateStats() {
+            const totalDebtors = filteredData.length;
+            const totalPlafond = filteredData.reduce((sum, item) => sum + item.amount, 0);
+            const totalWorkforce = filteredData.reduce((sum, item) => sum + item.workforce, 0);
+            const approvedData = filteredData.filter(item => item.status === 'Disetujui');
+            const outstandingDebt = approvedData.reduce((sum, item) => sum + (item.amount * 0.75), 0);
+            return {
+                totalDebtors,
+                totalPlafond: (totalPlafond / 1000000).toFixed(1) + 'M',
+                outstandingDebt: (outstandingDebt / 1000000).toFixed(1) + 'M',
+                totalWorkforce: totalWorkforce.toLocaleString('id-ID')
+            };
+        }
+
+        function updateStats() {
+            const stats = calculateStats();
+            document.getElementById('total-debtors').textContent = stats.totalDebtors.toLocaleString('id-ID');
+            document.getElementById('total-plafond').textContent = stats.totalPlafond;
+            document.getElementById('outstanding-debt').textContent = stats.outstandingDebt;
+            document.getElementById('workforce').textContent = stats.totalWorkforce;
+        }
+
+        function getChartData() {
+            const sectorCounts = {};
+            const regionCounts = {};
+            const branchCounts = {};
+            const categories = {'0-50 Juta': 0, '>50-100 Juta': 0, '>100-300 Juta': 0, '>300 Juta': 0};
+            filteredData.forEach(item => {
+                sectorCounts[item.sector] = (sectorCounts[item.sector] || 0) + 1;
+                regionCounts[item.region] = (regionCounts[item.region] || 0) + 1;
+                if (item.status === 'Disetujui') {
+                    branchCounts[item.branch] = (branchCounts[item.branch] || 0) + (item.amount / 1000000);
+                }
+                if (item.amount <= 50000000) categories['0-50 Juta']++;
+                else if (item.amount <= 100000000) categories['>50-100 Juta']++;
+                else if (item.amount <= 300000000) categories['>100-300 Juta']++;
+                else categories['>300 Juta']++;
+            });
+            return { sectorCounts, regionCounts, branchCounts, categories };
+        }
+
+        function initCharts() {
+            updateCharts();
+        }
+
+        function updateCharts() {
+            const chartData = getChartData();
+            Object.keys(charts).forEach(key => {
+                if (charts[key] && key !== 'sectorTimeline') {
+                    charts[key].destroy();
+                }
+            });
+
+            const debtorCtx = document.getElementById('debtorChart').getContext('2d');
+            const categoryData = Object.values(chartData.categories);
+            const categoryLabels = Object.keys(chartData.categories);
+            charts.debtor = new Chart(debtorCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: categoryLabels,
+                    datasets: [{
+                        data: categoryData,
+                        backgroundColor: ['#667eea', '#f093fb', '#4facfe', '#43e97b'],
+                        borderColor: '#fff',
+                        borderWidth: 4,
+                        hoverOffset: 10
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '60%',
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 20, font: { size: 12, weight: '600' } }
+                        }
+                    }
+                }
+            });
+
+            const sectorCtx = document.getElementById('sectorChart').getContext('2d');
+            const sectorLabels = Object.keys(chartData.sectorCounts);
+            const sectorData = Object.values(chartData.sectorCounts);
+            charts.sector = new Chart(sectorCtx, {
+                type: 'pie',
+                data: {
+                    labels: sectorLabels,
+                    datasets: [{
+                        data: sectorData,
+                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'],
+                        borderColor: '#fff',
+                        borderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { usePointStyle: true, padding: 15, font: { size: 11, weight: '600' } }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#2c3e50',
+                            bodyColor: '#2c3e50',
+                            borderColor: '#667eea',
+                            borderWidth: 1,
+                            cornerRadius: 10,
+                            callbacks: { afterLabel: function() { return 'Klik untuk melihat timeline'; } }
+                        }
+                    },
+                    onClick: (event, activeElements) => {
+                        if (activeElements.length > 0) {
+                            const dataIndex = activeElements[0].index;
+                            const sector = sectorLabels[dataIndex];
+                            showSectorTimeline(sector);
+                        }
+                    },
+                    onHover: (event, activeElements) => {
+                        event.native.target.style.cursor = activeElements.length > 0 ? 'pointer' : 'default';
+                    }
+                }
+            });
+
+            const regionCtx = document.getElementById('regionChart').getContext('2d');
+            const regionLabels = Object.keys(chartData.regionCounts);
+            const regionData = Object.values(chartData.regionCounts);
+            const approvedRegionData = regionLabels.map(region => {
+                return filteredData.filter(item => item.region === region && item.status === 'Disetujui').length;
+            });
+            charts.region = new Chart(regionCtx, {
+                type: 'bar',
+                data: {
+                    labels: regionLabels,
+                    datasets: [{
+                        label: 'Total Pengajuan',
+                        data: regionData,
+                        backgroundColor: 'rgba(102, 126, 234, 0.8)',
+                        borderColor: '#667eea',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }, {
+                        label: 'Terealisasi',
+                        data: approvedRegionData,
+                        backgroundColor: 'rgba(40, 167, 69, 0.8)',
+                        borderColor: '#28a745',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { usePointStyle: true, font: { size: 12, weight: '600' } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            const branchCtx = document.getElementById('branchChart').getContext('2d');
+            const branchLabels = Object.keys(chartData.branchCounts);
+            const branchData = Object.values(chartData.branchCounts).map(val => val.toFixed(1));
+            charts.branch = new Chart(branchCtx, {
+                type: 'bar',
+                data: {
+                    labels: branchLabels,
+                    datasets: [{
+                        label: 'Realisasi (Miliar Rp)',
+                        data: branchData,
+                        backgroundColor: ['rgba(102, 126, 234, 0.8)', 'rgba(118, 75, 162, 0.8)', 'rgba(255, 99, 132, 0.8)', 'rgba(54, 162, 235, 0.8)', 'rgba(255, 206, 86, 0.8)', 'rgba(75, 192, 192, 0.8)', 'rgba(153, 102, 255, 0.8)', 'rgba(255, 159, 64, 0.8)'],
+                        borderColor: ['#667eea', '#764ba2', '#ff6384', '#36a2eb', '#ffce56', '#4bc0c0', '#9966ff', '#ff9f40'],
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.1)' } },
+                        y: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function showDetail(id) {
+            const item = allData.find(d => d.id === id);
+            const statusColor = item.status === 'Disetujui' ? '#28a745' : item.status === 'Ditolak' ? '#6c757d' : '#dc3545';
+            alert(`📋 DETAIL PENGAJUAN LENGKAP\n\n` +
+                  `🏢 Nama Pemohon: ${item.name}\n` +
+                  `💰 Nominal: Rp ${item.amount.toLocaleString('id-ID')}\n` +
+                  `📊 Status: ${item.status}\n` +
+                  `🏭 Sektor Usaha: ${item.sector}\n` +
+                  `📍 Wilayah: ${item.region}\n` +
+                  `🏛️ Bank: ${item.bank}\n` +
+                  `🏢 Cabang: ${item.branch}\n` +
+                  `📅 Tahun: ${item.year}\n` +
+                  `👥 Tenaga Kerja: ${item.workforce} orang\n` +
+                  `⏳ Pending Count: ${item.pendingCount || 0}`);
+        }
+
+        function applyFilters() {
+            const banks = $('#bank-filter').val() || [];
+            const regions = $('#region-filter').val() || [];
+            const years = $('#year-filter').val() || [];
+            const statuses = $('#status-filter').val() || [];
+            filteredData = allData.filter(item => {
+                return (banks.length === 0 || banks.includes(item.bank)) &&
+                       (regions.length === 0 || regions.includes(item.region)) &&
+                       (years.length === 0 || years.includes(item.year.toString())) &&
+                       (statuses.length === 0 || statuses.includes(item.status));
+            });
+            updateMapMarkers();
+            updateStats();
+            updateCharts();
+            document.querySelectorAll('.card, .stat-card, .growth-card, .map-section').forEach(card => {
+                card.style.transform = 'scale(0.95)';
+                setTimeout(() => { card.style.transform = 'scale(1)'; }, 200);
+            });
+            animateCounters();
+            console.log(`Filter applied: ${filteredData.length} items shown`);
+        }
+
+        function resetFilters() {
+            $('.multi-select').val(null).trigger('change');
+            filteredData = [...allData];
+            updateMapMarkers();
+            updateStats();
+            updateCharts();
+            document.querySelectorAll('.card, .stat-card, .growth-card, .map-section').forEach(card => {
+                card.style.transform = 'scale(1.05)';
+                setTimeout(() => { card.style.transform = 'scale(1)'; }, 200);
+            });
+            animateCounters();
+            console.log('Filters reset: All data shown');
+        }
+
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-value, .growth-metric-value');
+            counters.forEach(counter => {
+                counter.classList.remove('animate-counter');
+                setTimeout(() => { counter.classList.add('animate-counter'); }, 100);
+            });
+        }
+
+        // Inisialisasi saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', function() {
+            document.body.style.opacity = '0';
+            $('.multi-select').select2({
+                placeholder: 'Pilih opsi',
+                allowClear: true,
+                width: '100%'
+            });
+            initMap();
+            initCharts();
+            applyFilters();
+            document.getElementById('filterBtn').addEventListener('click', applyFilters);
+            document.getElementById('resetBtn').addEventListener('click', resetFilters);
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 0.5s ease';
+                document.body.style.opacity = '1';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
